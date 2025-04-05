@@ -108,7 +108,7 @@ if __name__ == '__main__':
         # start a new wandb run to track this script
         wandb.init(
             # set entity to specify your username or team name
-            # entity="qihangz-work",
+             entity="danieljo142-university-of-british-columbia",
             # set the wandb project where this run will be logged
             project="CPEN455HW",
             # group=Group Name
