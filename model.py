@@ -144,7 +144,48 @@ class PixelCNN(nn.Module):
 
         return x_out
     
-    
+#new conditional pcnn to train, copy over most of the code from the uncond pcnn
+class ConditionalPixelCNN(nn.Module):
+    def __init__(self, nr_resnet=5, nr_filters=80, nr_logistic_mix=10,
+                    resnet_nonlinearity='concat_elu', input_channels=3)
+        
+        super(ConditionalPixelCNN, self).__init__()
+        if resnet_nonlinearity == 'concat_elu' :
+            self.resnet_nonlinearity = lambda x : concat_elu(x)
+        else :
+            raise Exception('right now only concat elu is supported as resnet nonlinearity.')
+
+        down_nr_resnet = [nr_resnet] + [nr_resnet + 1] * 2
+        self.down_layers = nn.ModuleList([PixelCNNLayer_down(down_nr_resnet[i], nr_filters,
+                                                self.resnet_nonlinearity) for i in range(3)])
+
+        self.up_layers   = nn.ModuleList([PixelCNNLayer_up(nr_resnet, nr_filters,
+                                                self.resnet_nonlinearity) for _ in range(3)])
+
+        self.downsize_u_stream  = nn.ModuleList([down_shifted_conv2d(nr_filters, nr_filters,
+                                                    stride=(2,2)) for _ in range(2)])
+
+        self.downsize_ul_stream = nn.ModuleList([down_right_shifted_conv2d(nr_filters,
+                                                    nr_filters, stride=(2,2)) for _ in range(2)])
+
+        self.upsize_u_stream  = nn.ModuleList([down_shifted_deconv2d(nr_filters, nr_filters,
+                                                    stride=(2,2)) for _ in range(2)])
+
+        self.upsize_ul_stream = nn.ModuleList([down_right_shifted_deconv2d(nr_filters,
+                                                    nr_filters, stride=(2,2)) for _ in range(2)])
+
+        self.u_init = down_shifted_conv2d(input_channels + 1, nr_filters, filter_size=(2,3),
+                        shift_output_down=True)
+
+        self.ul_init = nn.ModuleList([down_shifted_conv2d(input_channels + 1, nr_filters,
+                                            filter_size=(1,3), shift_output_down=True),
+                                       down_right_shifted_conv2d(input_channels + 1, nr_filters,
+                                            filter_size=(2,1), shift_output_right=True)])
+
+        num_mix = 3 if self.input_channels == 1 else 10
+        self.nin_out = nin(nr_filters, num_mix * nr_logistic_mix)
+        self.init_padding = None
+
 class random_classifier(nn.Module):
     def __init__(self, NUM_CLASSES):
         super(random_classifier, self).__init__()
