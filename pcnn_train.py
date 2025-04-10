@@ -122,6 +122,7 @@ if __name__ == '__main__':
     #Reminder: if you have patience to read code line by line, you should notice this comment. here is the reason why we set num_workers to 0:
     #In order to avoid pickling errors with the dataset on different machines, we set num_workers to 0.
     #If you are using ubuntu/linux/colab, and find that loading data is too slow, you can set num_workers to 1 or even bigger.
+
     kwargs = {'num_workers':2, 'pin_memory':True, 'drop_last':True}
 
     # set data
@@ -180,7 +181,7 @@ if __name__ == '__main__':
     loss_op   = lambda real, fake : discretized_mix_logistic_loss(real, fake)
     sample_op = lambda x : sample_from_discretized_mix_logistic(x, args.nr_logistic_mix)
 
-    model = PixelCNN(nr_resnet=args.nr_resnet, nr_filters=args.nr_filters, 
+    model = ConditionalPixelCNN(nr_resnet=args.nr_resnet, nr_filters=args.nr_filters, 
                 input_channels=input_channels, nr_logistic_mix=args.nr_logistic_mix)
     model = model.to(device)
 

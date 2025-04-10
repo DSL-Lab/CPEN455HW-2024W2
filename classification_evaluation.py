@@ -24,6 +24,7 @@ NUM_CLASSES = len(my_bidict)
 def get_label(model, model_input, device):
     # Write your code here, replace the random classifier with your trained model
     # and return the predicted label, which is a tensor of shape (batch_size,)
+    
     answer = model(model_input, device)
     return answer
 # End of your code
